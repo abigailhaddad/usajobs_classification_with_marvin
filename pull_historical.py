@@ -170,6 +170,7 @@ def fetch_and_write_out_historical(start_date, end_date, file_name):
     dropped_count, total_count = len(sorted_df)-len(filtered_df), len(result_df)
     print(f'Filtering for length and phrase to exclude announcements without duty descriptions dropped {dropped_count} out of {total_count} rows')
     filtered_df.to_pickle(f"../data/{file_name}.pkl")
+    return(filtered_df)
 
 
 

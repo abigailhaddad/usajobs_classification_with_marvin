@@ -16,6 +16,7 @@ import logging
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 
+
 @ai_classifier
 class JobCategory(Enum):
     """Represents general areas of job responsibilities"""
@@ -23,10 +24,7 @@ class JobCategory(Enum):
     DATA_ANALYSIS_BI = "Data Analysis and Business Intelligence"
     RESEARCH_SCIENCE = "Research and Science"
     MANAGEMENT_LEADERSHIP = "Management and Leadership"
-    NONE_OF_THE_ABOVE = "None of the Above"
-
-
-# AI function to generate a job title
+    
 @ai_fn
 def generate_job_title(duties: str) -> str:
     """Given `duties`, generates a specific job title based on the content."""
@@ -46,6 +44,40 @@ class JobAnalyzer:
 
     def __repr__(self):
         return f"Duties: {self.duties[:100]}...\nCategory: {self.category}\nClarity Score: {self.clarity:.2f}\nEntities: {self.entities}\nJob Title: {self.job_title}"
+
+@ai_classifier
+class JobTitleContrast(Enum):
+    """
+    Compare two job titles:
+    
+    If the titles are the same or one title is an obvious subset of the other, classify as "Similar".
+    For example:
+    - "Data Scientist" vs "Data Scientist, ZP-1560-II/III, BEA-MP-VFP" are considered similar because the core title is the same.
+    - "Chief Data Officer" vs "Data Officer" are also similar.
+    - "Data Analyst" vs "Business Intelligence Analyst" are similar.
+    
+    If the core roles or designations in the titles differ significantly, classify as "Different".
+    For example:
+    - "Data Analyst" vs "Data Scientist" are different as they represent distinct roles.
+    """
+    Similar = "Position titles are identical or extremely similar"
+    Different = "Position titles are mismatched"
+
+
+class TitleContraster:
+    def __init__(self, job_title: str, official_title: str):
+        self.job_title = job_title
+        self.official_title = official_title
+        
+        # Create a combined string for classification
+        combined_title_info = f"Generated Title: {self.job_title} | Official Title: {self.official_title}"
+        
+        # Classify the combined string using the JobTitleContrast classifier
+        self.mismatch_level = JobTitleContrast(combined_title_info).value
+
+    def __repr__(self):
+        return f"Generated Job Title: {self.job_title}\nPosition Title: {self.official_title}\nMismatch Level: {self.mismatch_level}"
+
 
 
 def test_functions():

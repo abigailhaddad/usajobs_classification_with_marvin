@@ -22,20 +22,25 @@ def get_title_proportions(df):
     return proportions_df
 
 def get_top_n_titles(summary_df, n=5):
-    """Get the top n job titles by percentage for each category."""
-    dict_clusters = {}
+    """Get the top n job titles by percentage for each category and format it."""
+    categories = summary_df.index.tolist()
+    titles_list = []
     
-    for row_number in range(len(summary_df)):
-        row = summary_df.iloc[row_number]
-        dict_values = {k: int(v) for k, v in row.sort_values(ascending=False).head(n).to_dict().items() if v > 0}
-        dict_clusters[row_number] = dict_values
+    for _, row in summary_df.iterrows():
+        top_titles = ", ".join([k for k, v in row.sort_values(ascending=False).head(n).to_dict().items() if v > 0])
+        titles_list.append(top_titles)
         
-    return dict_clusters
+    return pd.DataFrame({'Category': categories, 'Top Titles': titles_list})
 
 def summarize_data(file_with_llm_markings):
+    # Assuming df is loaded from somewhere
     df = pd.read_pickle(f"../data/{file_with_llm_markings}.pkl") # replace this with wherever you're loading your DataFrame
     
     summary_df = get_title_proportions(df)
-    top_titles_dict = get_top_n_titles(summary_df)
+    result_df = get_top_n_titles(summary_df)
     
-    return top_titles_dict
+    # Write to CSV
+    result_df.to_csv('../results/top_titles_summary.csv', index=False)
+    
+    return result_df
+

@@ -30,7 +30,7 @@ class Config:
 
     class LLMConfig:
         def __init__(self):
-            self.BATCH_SIZE = 5
+            self.BATCH_SIZE = 10
             self.DIR_NAME = "batched_files"
             self.FILE_PREFIX = "batch_"
             self.sample_size = 10
@@ -39,7 +39,7 @@ class Config:
 if __name__ == "__main__":
     config = Config()
     
-    df_historical = fetch_and_write_out_historical(config.historical.start_date, config.historical.end_date, config.historical_file)
+    #df_historical = fetch_and_write_out_historical(config.historical.start_date, config.historical.end_date, config.historical_file)
     df_llm = process_file(config.historical_file, config.file_with_llm_markings, sample_size=config.llm.sample_size, BATCH_SIZE=config.llm.BATCH_SIZE, DIR_NAME=config.llm.DIR_NAME, FILE_PREFIX=config.llm.FILE_PREFIX)
     frequencies_wordcloud(config.file_with_llm_markings, config.wordcloud_name)
-    top_titles_dict = summarize_data(config.file_with_llm_markings)
+    top_titles_dict  = summarize_data(config.file_with_llm_markings)
