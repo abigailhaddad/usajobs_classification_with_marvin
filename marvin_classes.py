@@ -20,7 +20,8 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 @ai_classifier
 class JobCategory(Enum):
     """Represents general areas of job responsibilities"""
-    DATA_SCIENCE_ENGINEERING = "Data Science and Engineering"
+    DATA_ENGINEERING_SOFTWARE = "Data Engineering and Software Development"
+    DATA_SCIENCE = "Data Science"
     DATA_ANALYSIS_BI = "Data Analysis and Business Intelligence"
     RESEARCH_SCIENCE = "Research and Science"
     MANAGEMENT_LEADERSHIP = "Management and Leadership"
@@ -32,7 +33,7 @@ def generate_job_title(duties: str) -> str:
 @ai_fn
 def extract_entities(duties: str) -> list[str]:
     """
-    The software tools and programming languages identified.
+    The results of peforming Named Entity Recognition to identify software tools and programming languages.
     """
     
 class JobAnalyzer:

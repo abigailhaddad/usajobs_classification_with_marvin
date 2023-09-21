@@ -9,6 +9,7 @@ from marvin_classes import JobAnalyzer, TitleContraster
 from marvin import settings
 import logging
 import os
+import time
 
 # Set the settings
 # logging.basicConfig(level=logging.DEBUG)
@@ -68,14 +69,31 @@ def aggregate_batches(DIR_NAME, FILE_PREFIX):
     os.rmdir(DIR_NAME)
     return aggregated_df
 
-def process_file(historical_file, file_with_llm_markings, sample_size=None, BATCH_SIZE=100, DIR_NAME="batched_files", FILE_PREFIX="batch_"):
+def process_file(historical_file, file_with_llm_markings, sample_size=None, BATCH_SIZE=100, DIR_NAME="batched_files", FILE_PREFIX="batch_", max_retries=5, retry_delay=60):
     settings.llm_request_timeout_seconds = 6000
     input_path = f"../data/{historical_file}.pkl"
     output_path = f"../data/{file_with_llm_markings}.pkl"
     df = load_data(input_path)
+    
     if sample_size:
         df = df.head(sample_size)
-    batch_processing(df, BATCH_SIZE, DIR_NAME, FILE_PREFIX)
+    
+    retries = 0
+    success = False
+    while retries < max_retries and not success:
+        try:
+            batch_processing(df, BATCH_SIZE, DIR_NAME, FILE_PREFIX)
+            success = True
+        except Exception as e:
+            retries += 1
+            print(f"API failed, attempt {retries}/{max_retries}. Retrying in {retry_delay} seconds.")
+            print(f"Error: {e}")
+            time.sleep(retry_delay)  # wait for the specified delay before retrying
+
+    if not success:
+        print("Failed to process after maximum retries.")
+        return None
+
     final_df = aggregate_batches(DIR_NAME, FILE_PREFIX)
     final_df.to_pickle(output_path)
     return final_df
