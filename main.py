@@ -9,6 +9,8 @@ from run_llm import process_file
 from pull_historical import fetch_and_write_out_historical
 from graphics_frequency_job_title import frequencies_wordcloud
 from clustering import summarize_data
+from test_ner import all_strings_present
+from ner_with_regex import find_tools_in_duties
 
 class Config:
     def __init__(self):
@@ -33,7 +35,7 @@ class Config:
             self.BATCH_SIZE = 10
             self.DIR_NAME = "batched_files"
             self.FILE_PREFIX = "batch_"
-            self.sample_size = 10
+            self.sample_size = 50
 
 
 if __name__ == "__main__":
@@ -43,3 +45,11 @@ if __name__ == "__main__":
     df_llm = process_file(config.historical_file, config.file_with_llm_markings, sample_size=config.llm.sample_size, BATCH_SIZE=config.llm.BATCH_SIZE, DIR_NAME=config.llm.DIR_NAME, FILE_PREFIX=config.llm.FILE_PREFIX)
     frequencies_wordcloud(config.file_with_llm_markings, config.wordcloud_name)
     top_titles_dict  = summarize_data(config.file_with_llm_markings)
+    
+    
+    df_llm['all_present'] = df_llm.apply(all_strings_present, axis=1)
+    
+    df_llm = find_tools_in_duties(df_llm)
+    
+    
+    filtered_df = df_llm[df_llm[['found_tools', 'software_tools', 'programming_languages']].apply(lambda x: any(len(y) > 0 for y in x), axis=1)]

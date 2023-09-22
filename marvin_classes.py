@@ -7,14 +7,21 @@ Created on Tue Sep 12 17:15:02 2023
 import os
 from enum import Enum
 import openai
-from marvin import ai_classifier, ai_fn
+from marvin import ai_classifier, ai_fn, settings, ai_model
 import logging
+from typing import List
+from pydantic import BaseModel
+
+settings.llm_max_tokens=1500
+llm_max_context_tokens=2500
+settings.llm_temperature=0.0
+
 
 #logging.basicConfig(level=logging.DEBUG) # if you want to see the JSON getting passed to OpenAI
 #logging.disable(logging.CRITICAL) # if you want to turn off the logging
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
-
+settings.llm_model='openai/gpt-4'
 
 
 @ai_classifier
@@ -30,21 +37,31 @@ class JobCategory(Enum):
 def generate_job_title(duties: str) -> str:
     """Given `duties`, generates a specific job title based on the content."""
 
-@ai_fn
-def extract_entities(duties: str) -> list[str]:
-    """
-    The results of peforming Named Entity Recognition to identify software tools and programming languages.
-    """
-    
+
+@ai_model(instructions='Extract programming languages and named software tools from the given text. Only return items directly supported in text.')
+class TechDetails(BaseModel):
+    text: str
+    programming_languages: List[str]
+    software_tools: List[str]
+
 class JobAnalyzer:
     def __init__(self, duties: str):
         self.duties = duties
         self.category = JobCategory(self.duties).value
-        self.entities = extract_entities(self.duties)
         self.job_title = generate_job_title(self.duties)
 
+        # Extract tech details using the TechDetails model
+        tech_details = TechDetails(self.duties)
+        self.programming_languages = tech_details.programming_languages
+        self.software_tools = tech_details.software_tools
+
     def __repr__(self):
-        return f"Duties: {self.duties[:100]}...\nCategory: {self.category}\nClarity Score: {self.clarity:.2f}\nEntities: {self.entities}\nJob Title: {self.job_title}"
+        return (f"Duties: {self.duties}\n"
+                f"Category: {self.category}\n"
+                f"Job Title: {self.job_title}\n"
+                f"Programming Languages: {self.programming_languages}\n"
+                f"Software Tools: {self.software_tools}")
+
 
 @ai_classifier
 class JobTitleContrast(Enum):
@@ -63,7 +80,6 @@ class JobTitleContrast(Enum):
     """
     Similar = "Position titles are identical or extremely similar"
     Different = "Position titles are mismatched"
-
 
 class TitleContraster:
     def __init__(self, job_title: str, official_title: str):
@@ -85,20 +101,13 @@ def test_functions():
     # List of duties for testing
     duties_samples_list = [
     # Mixed with software tools
-    "Responsible for designing algorithms using Python. Experience with TensorFlow and PyTorch required. Collaborate using Jira and Git.",
+    "Assist in developing data set processes. | Assist in identifying ways to improve data reliability, efficiency and quality with the use of programming language and tools. | Assist in building data visualization products. | Assist in developing mathematical and/or statistical models for evaluation, identification, collection, and/or analysis of all data used to support assigned projects or programs.",
 
     # Not fitting any labels
-    "Handle office administration, schedule meetings, and manage office supplies.",
+    "Construct data pipelines using complex tools and techniques to handle data at scale. | Plan and conduct relevant research and analytical studies of Army problems to support critical operational problems and/or decisions. | Develop training, marketing, and other tools as a means of increasing knowledge of data management and data analysis within the MCoE. | Develop data set processes and uses programming language and tools to identify ways to improve data reliability, efficiency and quality for missions, goals, and future planning.",
 
     # Explicit software mention
-    "Develop data visualization dashboards using Tableau and PowerBI. Experience with SQL databases preferred.",
-
-    # Another non-fitting description
-    "Plan and execute marketing campaigns. Familiarity with Adobe Photoshop and Illustrator is a plus.",
-
-    # Mixed duties
-    "Work on ETL processes using Apache Kafka. Use R and Python for data analysis. Experience with Hadoop is essential."
-    ]
+    "Duties are listed at the full performance level. | Performs ad-hoc data mining and exploratory statistics tasks on very large datasets. | Utilizes general purpose programming libraries to complete tasks related to data science or modeling. | Develop reports that translate technical analyses to concise and understandable information. | Develop proposals for the initiation of additional data studies or analyses. | Utilize computer programs to create statistical or mathematical models."]
 
     # Test with the provided JobAnalyzer class
     for duties in duties_samples_list:

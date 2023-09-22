@@ -25,7 +25,8 @@ def process_batch(df_batch, batch_num):
     # 
     df_batch['analyzer'] = df_batch['duties_var'].apply(JobAnalyzer)
     df_batch['category'] = df_batch['analyzer'].apply(lambda x: x.category)
-    df_batch['entities'] = df_batch['analyzer'].apply(lambda x: x.entities)
+    df_batch['programming_languages'] = df_batch['analyzer'].apply(lambda x: x.programming_languages)
+    df_batch['software_tools'] = df_batch['analyzer'].apply(lambda x: x.software_tools)
     df_batch['job_title'] = df_batch['analyzer'].apply(lambda x: x.job_title)
 
     
