@@ -7,7 +7,7 @@ Created on Tue Sep 12 17:15:02 2023
 import os
 from enum import Enum
 import openai
-from marvin import ai_classifier, ai_fn, settings, ai_model
+from marvin import ai_classifier, ai_fn, settings, ai_model, settings
 import logging
 from typing import List
 from pydantic import BaseModel
@@ -21,7 +21,7 @@ settings.llm_temperature=0.0
 #logging.disable(logging.CRITICAL) # if you want to turn off the logging
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
-settings.llm_model='openai/gpt-4'
+settings.llm_model='openai/gpt-3.5-turbo'
 
 
 @ai_classifier
@@ -35,7 +35,7 @@ class JobCategory(Enum):
     
 @ai_fn
 def generate_job_title(duties: str) -> str:
-    """Given `duties`, generates a specific job title based on the content."""
+    """Given `duties`, generates a specific job title based on the content, not based on any titles contained in the text."""
 
 
 @ai_model(instructions='Extract programming languages and named software tools from the given text. Only return items directly supported in text.')

@@ -9,8 +9,9 @@ from run_llm import process_file
 from pull_historical import fetch_and_write_out_historical
 from graphics_frequency_job_title import frequencies_wordcloud
 from clustering import summarize_data
-from test_ner import all_strings_present
+from test_ner import all_strings_present, analyze_tool_discrepancies
 from ner_with_regex import find_tools_in_duties
+from marvin import settings
 
 class Config:
     def __init__(self):
@@ -35,10 +36,10 @@ class Config:
             self.BATCH_SIZE = 10
             self.DIR_NAME = "batched_files"
             self.FILE_PREFIX = "batch_"
-            self.sample_size = 50
-
+            self.sample_size = None
 
 if __name__ == "__main__":
+    print(settings)
     config = Config()
     
     #df_historical = fetch_and_write_out_historical(config.historical.start_date, config.historical.end_date, config.historical_file)
@@ -51,5 +52,9 @@ if __name__ == "__main__":
     
     df_llm = find_tools_in_duties(df_llm)
     
+    df_llm  = analyze_tool_discrepancies(df_llm)
+    df_llm['positionTitle']=df_llm['positionTitle'].str.title()
+    df_llm.groupby(['job_title','positionTitle']).count().to_csv("../results/title_fields.csv")
     
-    filtered_df = df_llm[df_llm[['found_tools', 'software_tools', 'programming_languages']].apply(lambda x: any(len(y) > 0 for y in x), axis=1)]
+    
+    

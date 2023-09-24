@@ -10,10 +10,7 @@ from marvin import settings
 import logging
 import os
 import time
-
-# Set the settings
-# logging.basicConfig(level=logging.DEBUG)
-#logging.disable(logging.CRITICAL)
+import datetime
 
 
 
@@ -44,13 +41,27 @@ def batch_processing(df, BATCH_SIZE, DIR_NAME, FILE_PREFIX):
     batch_num = 0
     while len(df) > 0:
         print(f"Processing batch {batch_num}, {len(df)} records left")
+        
+        # Start the timer here
+        start_time = datetime.datetime.now()
+        
         df_batch = df.sample(min(BATCH_SIZE, len(df)), random_state=42)
         df = df.drop(df_batch.index)
 
         if not os.path.exists(f"{DIR_NAME}/{FILE_PREFIX}{batch_num}.pkl"):
             processed_df = process_batch(df_batch, batch_num)
             save_batch(processed_df, batch_num, DIR_NAME, FILE_PREFIX)
-
+            
+        # Stop the timer
+        end_time = datetime.datetime.now()
+        elapsed_time = (end_time - start_time).seconds / 60  # Convert to minutes
+        
+        # Calculate the number of batches left and predict the time left
+        batches_left = (len(df) // BATCH_SIZE) + 1  # This ensures any leftover records also get a batch
+        predicted_time_left = elapsed_time * batches_left
+        
+        print(f"Batch {batch_num} took {elapsed_time:.2f} minutes. Estimated time left: {predicted_time_left:.2f} minutes.")
+        
         batch_num += 1
 
 def save_batch(df, batch_num, DIR_NAME, FILE_PREFIX):

@@ -13,17 +13,17 @@ def get_software_tools_and_languages():
     """
 
     bounded_tools = [
-        'r', 'go', 'rust', 'git', 'aws', 'bash', 'java'
+        'r', 'rust', 'git', 'aws', 'bash', 'java', 'perl', 'scala', 'conda', 'hive'
     ]
 
     unbounded_tools = [
-        'python', 'c\+\+', 'c#', 'ruby', 'perl', 'php', 'scala', 'swift',
+        'python', 'c\+\+', 'c#', 'ruby', 'php', "power bi",
         'powershell', 'matlab', 'octave', 'kotlin', 'fortran', 'cobol', 'assembly',
-        'kafka', 'prefect', 'spark', 'hadoop', 'hive', 'pig', 'redshift', 'bigquery',
+        'kafka', 'prefect', 'spark', 'hadoop', 'pig', 'redshift', 'bigquery',
         'docker', 'kubernetes', 'ansible', 'terraform', 'jenkins', 'kibana', 'zookeeper',
         'grafana', 'prometheus', 'logstash', 'rabbitmq', 'selenium', 'nginx', 'tomcat',
-        'jest', 'mocha', 'gradle', 'maven', 'webpack', 'gulp', 'yarn', 'virtualenv',
-        'conda', 'sql', 'javascript', 'typescript', 'vba', 'shiny', 'r-shiny', 'rshiny',
+        'mocha', 'gradle', 'maven', 'webpack', 'gulp', 'yarn', 'virtualenv',
+        'sql', 'javascript', 'typescript', 'vba', 'shiny', 'r-shiny', 'rshiny',
         'azure', 'gcp', 'powerbi', 'tableau', 'qlikview', 'looker', 'd3\.js', 'postgresql',
         'mysql', 'mongodb', 'cassandra', 'sqlite', 'oracle', 'db2', 'elasticsearch', 'influxdb',
         'neo4j', 'arangodb', 'dynamodb', 'mssql', 'cockroachdb', 'riak', 'anaconda', 'jupyter',
