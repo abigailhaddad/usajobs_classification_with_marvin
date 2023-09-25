@@ -43,7 +43,16 @@ def process_dataframe(df):
 def frequencies_wordcloud(file_with_llm_markings, wordcloud_name):
     df = pd.read_pickle(f"../data/{file_with_llm_markings}.pkl")
     # Extract and process titles for wordcloud
-    title_frequencies_dict = df['job_title'].value_counts().to_dict()
+
+    # Calculate the frequencies of job titles
+    title_frequencies = df['job_title'].str.title().value_counts()
+    df['positionTitle']=df['positionTitle'].str.title()
+    # Exclude titles that are in the df['positionTitle'] column
+    filtered_title_frequencies = title_frequencies[~title_frequencies.index.isin(df['positionTitle'].unique())]
+    
+    # Convert to dictionary
+    title_frequencies_dict = filtered_title_frequencies.to_dict()
+
     generate_wordcloud(title_frequencies_dict, save_path=f'../results/{wordcloud_name}.png')
 
     summary_df = process_dataframe(df)
