@@ -115,3 +115,38 @@ def test_functions():
         print(analysis)
         print("-" * 80)
 
+
+import os
+import openai
+from marvin import ai_fn, settings, settings
+from typing import List, Dict
+from pydantic import BaseModel
+
+settings.llm_max_tokens=1500
+llm_max_context_tokens=2500
+settings.llm_temperature=0.0
+
+
+#logging.basicConfig(level=logging.DEBUG) # if you want to see the JSON getting passed to OpenAI
+#logging.disable(logging.CRITICAL) # if you want to turn off the logging
+
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+settings.llm_model='openai/gpt-3.5-turbo'
+
+@ai_fn
+def fetch_related_tasks(base_prompt: str) -> Dict[str, int]:
+    """Given `task`, generate a dictionary of ten tasks that are related to that task. The keys are the tasks, and the values are numbers from 1-10, indicating the degree of relatedness to the prompt."""
+
+
+class BaseTask:
+    def __init__(self, task: str):
+        self.task = task
+        self.related_tasks = fetch_related_tasks(self.task)
+
+    def __repr__(self):
+        return f"Base Prompt: {self.task}\nRelated Tasks: {self.related_tasks}"
+
+
+# Using the BasePrompt class
+base_prompt_obj = BaseTask("Data analysis")
+print(base_prompt_obj)
