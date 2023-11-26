@@ -5,7 +5,7 @@ Created on Tue Sep 12 22:18:04 2023
 @author: abiga
 """
 import pandas as pd
-from marvin_classes import JobAnalyzer, TitleContraster
+from marvin_classes import JobAnalyzer
 from marvin import settings
 import logging
 import os
@@ -19,20 +19,9 @@ def load_data(file_path):
 
 def process_batch(df_batch, batch_num):
     
-    # 
     df_batch['analyzer'] = df_batch['duties_var'].apply(JobAnalyzer)
-    df_batch['category'] = df_batch['analyzer'].apply(lambda x: x.category)
     df_batch['programming_languages'] = df_batch['analyzer'].apply(lambda x: x.programming_languages)
     df_batch['software_tools'] = df_batch['analyzer'].apply(lambda x: x.software_tools)
-    df_batch['job_title'] = df_batch['analyzer'].apply(lambda x: x.job_title)
-
-    
-    # Run TitleContraster
-    df_batch['title_contrast'] = df_batch.apply(lambda row: TitleContraster(row['job_title'], row['positionTitle']), axis=1)
-    df_batch['mismatch_level'] = df_batch['title_contrast'].apply(lambda x: x.mismatch_level)
-
-    # Drop temporary columns
-    df_batch = df_batch.drop(columns=['analyzer', 'title_contrast'])
 
     return df_batch
 
