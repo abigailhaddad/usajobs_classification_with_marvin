@@ -1,35 +1,70 @@
 import pandas as pd
+import ast
 import numpy as np
 
-# Function to check if either 'programming_languages' or 'software_tools' has any entries
-def has_entities(row):
-    return bool(row['programming_languages']) or bool(row['software_tools'])
+# Function to convert string representation of lists into actual lists
+def string_to_list(string):
+    try:
+        return ast.literal_eval(string)
+    except (ValueError, SyntaxError):
+        return []
 
-df = final_aggregated_joa = pd.read_pickle("../data/final_aggregated_joa.pkl")
+# Function to identify the elements not in label
+def elements_not_in_label(programming_languages, software_tools, label):
+    return list(set(programming_languages + software_tools) - set(label))
 
-# Add a column to the DataFrame that indicates if the row has any entities
-df['has_entities'] = df.apply(has_entities, axis=1)
+# Function to identify the elements in label but not in programming_languages and software_tools
+def elements_not_in_programming_tools(programming_languages, software_tools, label):
+    return list(set(label) - set(programming_languages + software_tools))
 
-# Separate the data into two DataFrames: one where entities are found and one where they are not
-entities_df = df[df['has_entities']]
-no_entities_df = df[~df['has_entities']]
+# Function to identify the overlap between label and programming_languages and software_tools
+def overlap_elements(programming_languages, software_tools, label):
+    return list(set(label) & set(programming_languages + software_tools))
 
-# Determine the number of samples you want from each group
-# Here we take more samples from rows with entities to ensure they are well-represented
-num_samples_with_entities = min(25, len(entities_df))  # At most 25 or the number of available rows
-num_samples_without_entities = 50 - num_samples_with_entities
+# Function to calculate precision, recall, and F1 score
+def calculate_metrics(df):
+    tp = sum(len(row['overlap']) for index, row in df.iterrows())
+    fp = sum(len(row['not_in_programming_tools']) for index, row in df.iterrows())
+    fn = sum(len(row['not_in_label']) for index, row in df.iterrows())
 
-# Ensure not to sample more than the available rows without entities
-num_samples_without_entities = min(num_samples_without_entities, len(no_entities_df))
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
-# Randomly sample from each group
-sampled_with_entities = entities_df.sample(n=num_samples_with_entities, random_state=1)
-sampled_without_entities = no_entities_df.sample(n=num_samples_without_entities, random_state=1)
+    return precision, recall, f1
 
-# Combine the two samples into one DataFrame
-sampled_df = pd.concat([sampled_with_entities, sampled_without_entities])
+def metrics_to_markdown(precision, recall, f1):
+    return f"""
+| Metric    | Value |
+|-----------|-------|
+| Precision | {precision:.4f} |
+| Recall    | {recall:.4f} |
+| F1 Score  | {f1:.4f} |
+"""
 
-sampled_df  # This DataFrame now contains the sampled data
+def confusion_matrix_to_markdown(conf_matrix, class_labels):
+    header = "| Predicted \\ Actual | " + " | ".join(class_labels) + " |\n"
+    separator = "|:---:" * (len(class_labels) + 1) + "|\n"
+    rows = "\n".join([f"| {actual} | " + " | ".join(map(str, row)) + " |" for actual, row in zip(class_labels, conf_matrix)])
+    return header + separator + rows
 
+# Read the sample data from CSV
+df = pd.read_csv("../data/sample.csv")
 
-sampled_df.to_csv("../data/sampled_joa.csv")
+# Apply the string to list conversion
+df['programming_languages'] = df['programming_languages'].apply(string_to_list)
+df['software_tools'] = df['software_tools'].apply(string_to_list)
+df['label'] = df['label'].apply(string_to_list)
+
+# Calculate the additional columns
+df['not_in_label'] = df.apply(lambda row: elements_not_in_label(row['programming_languages'], row['software_tools'], row['label']), axis=1)
+df['not_in_programming_tools'] = df.apply(lambda row: elements_not_in_programming_tools(row['programming_languages'], row['software_tools'], row['label']), axis=1)
+df['overlap'] = df.apply(lambda row: overlap_elements(row['programming_languages'], row['software_tools'], row['label']), axis=1)
+
+# Calculate the metrics
+precision, recall, f1 = calculate_metrics(df)
+
+# Print the metrics
+print(f"Precision: {precision:.4f}")
+print(f"Recall: {recall:.4f}")
+print(f"F1 Score: {f1:.4f}")
