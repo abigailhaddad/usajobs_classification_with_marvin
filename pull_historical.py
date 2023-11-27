@@ -161,7 +161,8 @@ import numpy as np
 
 def fetch_and_write_out_historical(start_date, end_date, file_name):
     # An example of fetching historical data for a given series and date range.
-    position_series_list = [1550, 1560, 2210, 1515, 1529, 1530]
+    position_series_list = [1550, 1560, 1515]
+    print(position_series_list)
     all_series_data = []  # Empty list to store data from all series
     
     # Iterate through each position series and fetch historical data
@@ -173,6 +174,7 @@ def fetch_and_write_out_historical(start_date, end_date, file_name):
         concatenated_data['duties_var'] = np.where(concatenated_data['duties'].notna(), 
                                                    concatenated_data['duties'], 
                                                    concatenated_data['majorDutiesList'])
+        print(len(concatenated_data))
         all_series_data.append(concatenated_data)
 
     # Concatenate the data from all position series

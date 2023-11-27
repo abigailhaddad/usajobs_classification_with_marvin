@@ -14,8 +14,8 @@ from marvin import settings
 class Config:
     def __init__(self):
         # General configuration
-        self.historical_file = "historical_joa"
-        self.file_with_llm_markings = "final_aggregated_joa_1126"
+        self.historical_file = "historical_joa_various_series"
+        self.file_with_llm_markings = "final_aggregated_joa_1127"
 
         # Configuration for historical data
         self.historical = self.HistoricalConfig()
@@ -25,8 +25,8 @@ class Config:
 
     class HistoricalConfig:
         def __init__(self):
-            self.start_date = "11/01/2023"
-            self.end_date = "11/26/2023"
+            self.start_date = "10/01/2023"
+            self.end_date = "10/31/2023"
 
     class LLMConfig:
         def __init__(self):
