@@ -1,6 +1,7 @@
 import pandas as pd
 import ast
 from transformers import AutoTokenizer
+import string
 tokenizer = AutoTokenizer.from_pretrained('numind/generic-entity_recognition_NER-v1')
 
 
@@ -37,47 +38,44 @@ def get_word_to_offset_mapping(text):
     return word_to_offset
 
 def tokenize_and_align_labels(text, labels_dict):
-    tokenized_input = tokenizer(text, truncation=True, return_offsets_mapping=True)
+    tokenized_input = tokenizer(text, truncation=True, return_offsets_mapping=True, is_split_into_words=False)
     tokens = tokenized_input.tokens()
     offset_mapping = tokenized_input["offset_mapping"]
 
-    word_to_offset = get_word_to_offset_mapping(text)
-
-    print("Word to Offset Mapping:", word_to_offset)  # Debugging
+    # Create a dictionary to store the spans of the entities
+    entity_spans = {}
+    for entity, label in labels_dict.items():
+        start = text.find(entity)
+        if start != -1:
+            entity_spans[(start, start + len(entity))] = label
 
     aligned_labels = []
-    skip = 0  # Skip counter for multi-word entities
+    last_label = 'O'  # Keep track of the last label
 
-    for i, offset in enumerate(offset_mapping):
-        if skip > 0:
-            skip -= 1
-            continue
-
-        start, end = offset
+    for start, end in offset_mapping:
         if start == end:  # Special token
             aligned_labels.append('O')
+            last_label = 'O'
             continue
 
-        matched_entity = None
-        for entity, label in labels_dict.items():
-            entity_start = text.find(entity)
-            if entity_start == start:
-                matched_entity = entity
+        found_label = None
+        # Check if this span matches any entity span
+        for span, label in entity_spans.items():
+            if start >= span[0] and end <= span[1]:
+                found_label = label
                 break
 
-        if matched_entity:
-            entity_tokens = tokenizer.tokenize(matched_entity)
-            label = labels_dict[matched_entity]
-            aligned_labels.append(f"B-{label}")
-            aligned_labels.extend([f"I-{label}"] * (len(entity_tokens) - 1))
-            skip = len(entity_tokens) - 1
+        if found_label:
+            if last_label == f"I-{found_label}":
+                aligned_labels.append(f"I-{found_label}")
+            else:
+                aligned_labels.append(f"B-{found_label}")
+            last_label = f"I-{found_label}"  # Update last label to I-<Label>
         else:
             aligned_labels.append('O')
-
-        print(f"Token: {tokens[i]}, Offset: {offset}, Matched Entity: {matched_entity}, Label: {aligned_labels[-1]}")  # Debugging
+            last_label = 'O'
 
     return tokens, aligned_labels
-
 
 
 
@@ -95,8 +93,8 @@ verify_labels_in_text(df, 'duties_var', 'labeled_entities')
 
 
 # Example usage
-text_example = df.loc[1, 'duties_var']  # Replace with actual row access
-labels_dict_example = df.loc[1, 'labeled_entities']  # Replace with actual row access
+text_example = df.loc[4, 'duties_var']  # Replace with actual row access
+labels_dict_example = df.loc[4, 'labeled_entities']  # Replace with actual row access
 tokens, labels = tokenize_and_align_labels(text_example, labels_dict_example)
 # Assuming tokenize_and_align_labels is already defined
 
