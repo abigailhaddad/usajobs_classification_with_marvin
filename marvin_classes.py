@@ -22,7 +22,10 @@ settings.llm_temperature=0.0
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 settings.llm_model='openai/gpt-4'
 
-@ai_model(instructions='Extract programming languages and named software tools from the given text. Only return items directly supported in text.')
+@ai_model(instructions='''Extract programming languages and 
+          named software tools from the given text. 
+          Only return items directly supported in text.''')
+
 class TechDetails(BaseModel):
     text: str
     programming_languages: List[str]

@@ -42,11 +42,6 @@ def metrics_to_markdown(precision, recall, f1):
 | F1 Score  | {f1:.4f} |
 """
 
-def confusion_matrix_to_markdown(conf_matrix, class_labels):
-    header = "| Predicted \\ Actual | " + " | ".join(class_labels) + " |\n"
-    separator = "|:---:" * (len(class_labels) + 1) + "|\n"
-    rows = "\n".join([f"| {actual} | " + " | ".join(map(str, row)) + " |" for actual, row in zip(class_labels, conf_matrix)])
-    return header + separator + rows
 
 # Read the sample data from CSV
 df = pd.read_csv("../data/sample.csv")
@@ -68,3 +63,7 @@ precision, recall, f1 = calculate_metrics(df)
 print(f"Precision: {precision:.4f}")
 print(f"Recall: {recall:.4f}")
 print(f"F1 Score: {f1:.4f}")
+
+metrics_md = metrics_to_markdown(precision, recall, f1)
+with open('../data/metrics_and_confusion_matrix.md', 'w') as md_file:
+    md_file.write(metrics_md)
