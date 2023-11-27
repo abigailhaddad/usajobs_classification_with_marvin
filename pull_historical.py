@@ -156,21 +156,37 @@ def filter_duties(df: pd.DataFrame) -> pd.DataFrame:
 
 
 
+import pandas as pd
+import numpy as np
+
 def fetch_and_write_out_historical(start_date, end_date, file_name):
     # An example of fetching historical data for a given series and date range.
-    position_series = "1560"
-    historical_data_from_function = fetch_historical(position_series, start_date, end_date)   
-    historical_data_from_function['announcement_text'] = historical_data_from_function['_links'].apply(fetch_text_from_link)
-    expanded_data = historical_data_from_function.apply(expand_json, axis=1)
-    result_df = pd.concat([historical_data_from_function, expanded_data], axis=1)
+    position_series_list = [1550, 1560, 2210, 1515, 1529, 1530]
+    all_series_data = []  # Empty list to store data from all series
+    
+    # Iterate through each position series and fetch historical data
+    for position_series in position_series_list:
+        historical_data = fetch_historical(position_series, start_date, end_date)   
+        historical_data['announcement_text'] = historical_data['_links'].apply(fetch_text_from_link)
+        expanded_data = historical_data.apply(expand_json, axis=1)
+        concatenated_data = pd.concat([historical_data, expanded_data], axis=1)
+        concatenated_data['duties_var'] = np.where(concatenated_data['duties'].notna(), 
+                                                   concatenated_data['duties'], 
+                                                   concatenated_data['majorDutiesList'])
+        all_series_data.append(concatenated_data)
+
+    # Concatenate the data from all position series
+    result_df = pd.concat(all_series_data, ignore_index=True)
     result_df.to_pickle(f"../data/{file_name}_unfiltered.pkl")
-    result_df['duties_var'] = np.where(result_df['duties'].notna(), result_df['duties'], result_df['majorDutiesList'])
+    
+    # Sort, filter, and save the final filtered dataframe
     sorted_df = result_df.sort_values(by='duties_var', key=lambda x: x.str.len())
     filtered_df = filter_duties(sorted_df)
-    dropped_count, total_count = len(sorted_df)-len(filtered_df), len(result_df)
+    dropped_count, total_count = len(sorted_df) - len(filtered_df), len(result_df)
     print(f'Filtering for length and phrase to exclude announcements without duty descriptions dropped {dropped_count} out of {total_count} rows')
+    
     filtered_df.to_pickle(f"../data/{file_name}.pkl")
-    return(filtered_df)
+    return filtered_df
 
 
 

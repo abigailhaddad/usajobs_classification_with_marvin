@@ -65,5 +65,5 @@ print(f"Recall: {recall:.4f}")
 print(f"F1 Score: {f1:.4f}")
 
 metrics_md = metrics_to_markdown(precision, recall, f1)
-with open('../data/metrics_and_confusion_matrix.md', 'w') as md_file:
+with open('../data/metrics.md', 'w') as md_file:
     md_file.write(metrics_md)
