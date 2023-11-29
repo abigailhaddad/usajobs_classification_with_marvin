@@ -203,12 +203,12 @@ def analyze_test_entities(train_data, test_data, evaluation_results):
     found_in_train = test_entities_found.intersection(train_entities)
     not_found_in_train = test_entities_found.difference(train_entities)
     missed_entities = test_entities_true - test_entities_found
+    not_found_in_test = train_entities - test_entities_true
 
     print("Entities found in test data that were in training data:", found_in_train)
     print("Entities found in test data that were NOT in training data:", not_found_in_train)
     print("Missed entities in test data:", missed_entities)
-
-# Usage
+    print("Entities in training data not found in test data:", not_found_in_test)
 
 
 
