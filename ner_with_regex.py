@@ -17,14 +17,14 @@ def get_software_tools_and_languages():
     ]
 
     unbounded_tools = [
-        'python', 'c\+\+', 'c#', 'ruby', 'php', "power bi",
+        'python', 'c++', 'c#', 'ruby', 'php', "power bi",
         'powershell', 'matlab', 'octave', 'kotlin', 'fortran', 'cobol', 'assembly',
         'kafka', 'prefect', 'spark', 'hadoop', 'pig', 'redshift', 'bigquery',
         'docker', 'kubernetes', 'ansible', 'terraform', 'jenkins', 'kibana', 'zookeeper',
         'grafana', 'prometheus', 'logstash', 'rabbitmq', 'selenium', 'nginx', 'tomcat',
         'mocha', 'gradle', 'maven', 'webpack', 'gulp', 'yarn', 'virtualenv',
         'sql', 'javascript', 'typescript', 'vba', 'shiny', 'r-shiny', 'rshiny',
-        'azure', 'gcp', 'powerbi', 'tableau', 'qlikview', 'looker', 'd3\.js', 'postgresql',
+        'azure', 'gcp', 'powerbi', 'tableau', 'qlikview', 'looker', 'd3.js', 'postgresql',
         'mysql', 'mongodb', 'cassandra', 'sqlite', 'oracle', 'db2', 'elasticsearch', 'influxdb',
         'neo4j', 'arangodb', 'dynamodb', 'mssql', 'cockroachdb', 'riak', 'anaconda', 'jupyter',
         'rstudio', 'github', 'gitlab', 'pycharm', 'eclipse', 'intellij', 'vscode', 'atom',
@@ -43,7 +43,7 @@ def find_tools_in_duties(df):
 
     def find_tools(text):
         found_bounded = [tool for tool in bounded_tools if re.search(r'\b' + tool + r'\b', text, re.IGNORECASE)]
-        found_unbounded = [tool for tool in unbounded_tools if tool in text.lower()]
+        found_unbounded = [tool for tool in unbounded_tools if re.search(re.escape(tool), text, re.IGNORECASE)]
         
         # Debug prints
         if found_bounded:
